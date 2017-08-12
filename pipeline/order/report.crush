@@ -1,0 +1,62 @@
+
+SETUP_REPORT() # daily, weekly, monthly
+
+data_dir=./data
+delim=$(tochar 0xfe)
+tab=$(tochar 0x9)
+readonly processed_log=./processed.log
+readonly ticket=peach_sales
+
+ARRAY(required_fields,
+    order_number email sku name quantity options timestamp
+    payment_method payment_status fulfillment_status coupon_code
+    total order_subtotal
+    order_comments )
+
+GET_FILES(files, $processed_log, $data_dir, order*.tsv)
+
+FOR_EACH_FILE(f, $files,
+  t1=$wdir/tmp/${PID}_`basename $f .gz`.t1
+  t2=$wdir/tmp/${PID}_`basename $f .gz`.t2
+  file_date=$(echo $f | sed -e 's/^.*orders_//' -e 's/.tsv$//')
+  SET_OUTPUT_FILE(output_file,  $wdir/output/${ticket}-$file_date.csv)
+  CHECKPOINT($t2,
+    PROCESS(
+      cat $f |
+        tr -d '"' |
+        sed -e "s/$(tochar 0x9)/$delim/g" \
+        > $t1
+    )
+
+    PROCESS(
+      cat $t1 |
+        reorder -d "$delim" -f $required_fields_list \
+        > $t2
+    )
+  )
+  # It was TAB to start.
+  export DELIMITER=$delim
+  DEP_CHECKPOINT($output_file, $t2,
+    PROCESS(
+      cat $t2 |
+        $wdir/order_comments.pl |
+        cutfield -F order_comments |
+        translate_field -F options -x 's/Student Name://' |
+        add_field -c 7 -A timestamp -l day |
+        convdate -F day -i "%b %d, %Y %I:%M %p" -o "%Y-%m-%d" |
+        (read h; echo "$h" |
+            sed -e "s/${delim}options${delim}/${delim}student_name${delim}/" \
+                -e  "s/${delim}order_subtotal${delim}/${delim}order_total${delim}/" \
+                -e  "s/${delim}total${delim}/${delim}item_total${delim}/";
+
+            cat) |
+        tee >(csvformat > $output_file) \
+            > $output_file.orig
+    )
+  )
+
+  MARK_AS_PROCESSED($processed_log, $f)
+)
+
+DELETE_TMP_FILES($wdir/tmp)
+

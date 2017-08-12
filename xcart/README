@@ -1,0 +1,14 @@
+
+Build the formatted roster file:
+
+  cat ./roster.csv | (read h; cat) | calcfield -d , -e '[2] . " " . [1]' | cut -d, -f3 > formatted-roster.csv
+
+
+Then create an xcart format file for import:
+
+  ./build-xcart.pl > all-product-options.xcart
+
+
+And go to Products > Import product > XCart
+
+
