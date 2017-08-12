@@ -11,7 +11,7 @@ ARRAY(required_fields,
     order_number email sku name quantity options timestamp
     payment_method payment_status fulfillment_status coupon_code
     total order_subtotal
-    order_comments )
+    order_comments note_for_staff)
 
 GET_FILES(files, $processed_log, $data_dir, order*.tsv)
 
@@ -42,14 +42,17 @@ FOR_EACH_FILE(f, $files,
         $wdir/order_comments.pl |
         cutfield -F order_comments |
         translate_field -F options -x 's/Student Name://' |
+        calcfield -A quantity -c adj_quantity \
+            -e '[name] =~ /Half Case/ ? [quantity] / 2 : [quantity]' |
         add_field -c 7 -A timestamp -l day |
         convdate -F day -i "%b %d, %Y %I:%M %p" -o "%Y-%m-%d" |
         (read h; echo "$h" |
             sed -e "s/${delim}options${delim}/${delim}student_name${delim}/" \
+                -e "s/${delim}name${delim}/${delim}product_name${delim}/" \
                 -e  "s/${delim}order_subtotal${delim}/${delim}order_total${delim}/" \
                 -e  "s/${delim}total${delim}/${delim}item_total${delim}/";
 
-            cat) |
+            sed -e 's/Conventional Peaches/Conventional Palisade Peaches/g') |
         tee >(csvformat > $output_file) \
             > $output_file.orig
     )
