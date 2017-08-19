@@ -42,9 +42,9 @@ FOR_EACH_FILE(f, $files,
         $wdir/order_comments.pl |
         cutfield -F order_comments |
         translate_field -F options -x 's/Student Name://' |
+        add_field -c 7 -A timestamp -l day |
         calcfield -A quantity -c adj_quantity \
             -e '[name] =~ /Half Case/ ? [quantity] / 2 : [quantity]' |
-        add_field -c 7 -A timestamp -l day |
         convdate -F day -i "%b %d, %Y %I:%M %p" -o "%Y-%m-%d" |
         (read h; echo "$h" |
             sed -e "s/${delim}options${delim}/${delim}student_name${delim}/" \
