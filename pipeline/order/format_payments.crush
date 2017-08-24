@@ -1,0 +1,51 @@
+
+SETUP_REPORT() # daily, weekly, monthly
+    
+data_dir="./data"
+delim=$(tochar 0xfe)
+# export DELIMITER=$delim
+readonly processed_log=payments_processed.log
+readonly ticket=peach_sales-payments
+
+ARRAY(required_fields,
+    order_number student_name order_total)
+
+GET_FILES(files, $processed_log, $wdir/output, peach_sales*.orig)
+
+export DELIMITER=$delim
+PROCESS(
+  cat $wdir/data/2017-peaches-payments-received.csv |
+    (read h; read h; cat -) |
+    csv2d |
+    $wdir/format_payments.pl |
+    (read h; echo $h; sort -t$delim -k1,1) \
+      > $wdir/tmp/${PID}_payments
+)
+
+
+FOR_EACH_FILE(f, $files,
+  file_date=$(basename $f .csv.orig | sed -e 's/^peach_sales-//')
+  SET_OUTPUT_FILE(output_file,  $wdir/output/${ticket}-$file_date.csv)
+  CHECKPOINT($output_file.orig,
+    PROCESS(
+      cat $f |
+        grepfield -F student_name -v '^$' |
+        grepfield -F payment_status 'Awaiting' |
+        reorder -F student_name,order_number,item_total |
+        (read h; echo $h; sort -t$delim -k1,1 -k2,2) |
+        aggregate -K student_name -S item_total -l balance |
+        (read h; echo $h; sort -t$delim -k1,1) |
+        mergekeys -A student_name -B student_name -D 0 \
+            - $wdir/tmp/${PID}_payments |
+        calcfield -A amount_collected -c remaining_due \
+            -e '[balance] - [amount_collected]' |
+        grepfield -F remaining_due -v '^0$' |
+        grepfield -F remaining_due -v '^\-' |
+        tee >(csvformat > $output_file) \
+            > $output_file.orig
+    )
+  )
+  MARK_AS_PROCESSED($processed_log, $f)
+)
+DELETE_TMP_FILES($wdir/tmp)
+

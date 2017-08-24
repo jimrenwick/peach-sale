@@ -46,6 +46,7 @@ FOR_EACH_FILE(f, $files,
         calcfield -A quantity -c adj_quantity \
             -e '[name] =~ /Half Case/ ? [quantity] / 2 : [quantity]' |
         convdate -F day -i "%b %d, %Y %I:%M %p" -o "%Y-%m-%d" |
+        grepfield -F payment_status -i -v 'Cancelled' |
         (read h; echo "$h" |
             sed -e "s/${delim}options${delim}/${delim}student_name${delim}/" \
                 -e "s/${delim}name${delim}/${delim}product_name${delim}/" \
@@ -57,7 +58,6 @@ FOR_EACH_FILE(f, $files,
             > $output_file.orig
     )
   )
-
   MARK_AS_PROCESSED($processed_log, $f)
 )
 
