@@ -1,0 +1,9 @@
+
+Helper script for producing reports for the day of pickup.
+
+students.sh and public.sh are the front door.
+
+The machine I dev'ed on didn't have a working crush-tools (m4)
+install. This could/should get ported.
+
+

@@ -10,7 +10,7 @@ readonly ticket=peach_sales-payments
 ARRAY(required_fields,
     order_number student_name order_total)
 
-GET_FILES(files, $processed_log, $wdir/output, peach_sales*.orig)
+GET_FILES(files, $processed_log, $wdir/output, peach_sales-20*.orig)
 
 export DELIMITER=$delim
 PROCESS(
