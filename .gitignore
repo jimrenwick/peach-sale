@@ -2,6 +2,7 @@
 *.csv
 *.orig
 *.log
+*.sorted
 *.tsv
 *~
 
