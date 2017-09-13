@@ -20,10 +20,10 @@ dp Dumper(\%p);
 
 
 # 1-5
-# 6-14
+# 6-14  (6-10)  (6-8)
 
 sub getTotalsArray {
-  return ( ('') x 5, (0) x 8 );
+  return ( ('') x 5, (0) x 2 );
 }
 
 sub emit {
@@ -64,7 +64,7 @@ while (my @line = @{$h->next}) {
   }
   $student_name = $h->student_name;
   push @lines, $h->getRawLine;
-  for (my $i = 5; $i < 14; $i++) {
+  for (my $i = 5; $i < 7; $i++) {
     $totals[$i] += $line[$i];
   }
 }

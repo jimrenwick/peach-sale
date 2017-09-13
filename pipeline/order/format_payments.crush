@@ -13,10 +13,19 @@ ARRAY(required_fields,
 GET_FILES(files, $processed_log, $wdir/output, peach_sales-20*.orig)
 
 export DELIMITER=$delim
+# PROCESS(
+#   cat $wdir/data/2017-peaches-payments-received.csv |
+#     (read h; read h; cat -) |
+#     csv2d |
+#     $wdir/format_payments.pl |
+#     (read h; echo $h; sort -t$delim -k1,1) \
+#       > $wdir/tmp/${PID}_payments
+# )
 PROCESS(
-  cat $wdir/data/2017-peaches-payments-received.csv |
-    (read h; read h; cat -) |
+  cat $wdir/data/2017-peaches-payments-received-2.csv |
+    (read h; read h; reorder --delim=, -f 1-5) |
     csv2d |
+    sed 's/\$//g' |
     $wdir/format_payments.pl |
     (read h; echo $h; sort -t$delim -k1,1) \
       > $wdir/tmp/${PID}_payments
