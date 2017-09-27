@@ -1,7 +1,7 @@
 #!/bin/bash
 
-data=data/peach_sales-2017-09-08_15-40.csv.orig
-payments=data/peach_sales-payments-2017-09-08_15-40.csv.orig
+data=data/peach_sales-2017-09-12_21-03.csv.orig
+payments=data/peach_sales-payments-2017-09-12_21-03.csv.orig
 export DELIMITER=$(tochar 0xfe)
 
 keys=(student_name timestamp customer_name email payment_status)

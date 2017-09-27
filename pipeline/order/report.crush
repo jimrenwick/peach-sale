@@ -47,6 +47,14 @@ FOR_EACH_FILE(f, $files,
             -e '[name] =~ /Half Case/ ? [quantity] / 2 : [quantity]' |
         convdate -F day -i "%b %d, %Y %I:%M %p" -o "%Y-%m-%d" |
         grepfield -F payment_status -i -v 'Cancelled' |
+        add_field -C sku -A sku -l is_public |
+        translate_field -F is_public \
+            -m 100=public -m 110=public -m 200=public -m 210=public \
+            -m 300=public -m 310=public -m 400=public -m 410=public \
+            -m 500=student -m 510=student -m 600=student -m 610=student \
+            -m 700=student -m 710=student -m 800=student -m 810=student \
+            -m 1004=donation |
+        reorder -m 4,20 |
         (read h; echo "$h" |
             sed -e "s/${delim}options${delim}/${delim}student_name${delim}/" \
                 -e "s/${delim}name${delim}/${delim}product_name${delim}/" \
